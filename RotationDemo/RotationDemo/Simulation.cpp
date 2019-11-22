@@ -9,6 +9,7 @@ void Simulation::Init()
 
 	paused = false;
 	slerp = false;
+	loop = false;
 	frames = 5;
 	animationTime = 2.0f;
 
@@ -33,7 +34,10 @@ void Simulation::Update(float dt)
 	if (!paused)
 		time += dt / 1000.0f;
 
-	time = min(time, animationTime);
+	if (loop)
+		time -= animationTime;
+	else
+		time = min(time, animationTime);
 }
 
 void Simulation::UpdateFrames()

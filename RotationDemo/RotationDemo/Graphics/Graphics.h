@@ -34,10 +34,15 @@ private:
 	void RendeGui();
 	void RenderMainPanel();
 	void RenderVisualisation();
+	void RenderModel(Matrix worldMatrix);
+	void RenderCube(Matrix worldMatrix, Vector4 color);
 
 	void updateFPSCounter();
 
 
+	int viewportWidth;
+	D3D11_VIEWPORT viewportLeft;
+	D3D11_VIEWPORT viewportRight;
 
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
@@ -50,9 +55,6 @@ private:
 
 	ConstantBuffer<ColoredObjectBuffer> cbColoredObject;
 	ConstantBuffer<LightBuffer> cbLight;
-
-	int max_probes = 1000;
-	VertexBuffer<VertexPN> vbProbes;
 
 	VertexBuffer<VertexPN> vbCube;
 	IndexBuffer ibCube;

@@ -125,20 +125,43 @@ void Graphics::RenderVisualisation()
 	this->deviceContext->VSSetConstantBuffers(0, 1, this->cbColoredObject.GetAddressOf());
 	this->deviceContext->PSSetConstantBuffers(0, 1, this->cbColoredObject.GetAddressOf());
 
-	/*if (guiData->showCube)
-	{
-		cbColoredObject.data.worldMatrix = simulation->GetModelMatrix();
-		cbColoredObject.data.wvpMatrix = cbColoredObject.data.worldMatrix * camera.GetViewMatrix() * camera.GetProjectionMatrix();
-		cbColoredObject.data.color = { 0.8f, 0.4f, 0.0f, 1.0f };
+	this->deviceContext->RSSetViewports(1, &viewportLeft);
 
-		if (!cbColoredObject.ApplyChanges()) return;
-		this->deviceContext->IASetVertexBuffers(0, 1, vbCube.GetAddressOf(), vbCube.StridePtr(), &offset);
-		this->deviceContext->IASetIndexBuffer(ibCube.Get(), DXGI_FORMAT_R32_UINT, 0);
-		this->deviceContext->DrawIndexed(ibCube.BufferSize(), 0, 0);
-	}*/
+	cbColoredObject.data.worldMatrix = Matrix::Identity;
+	cbColoredObject.data.wvpMatrix = cbColoredObject.data.worldMatrix * camera.GetViewMatrix() * camera.GetProjectionMatrix();
+	cbColoredObject.data.color = { 0.8f, 0.4f, 0.0f, 1.0f };
+
+	if (!cbColoredObject.ApplyChanges()) return;
+	this->deviceContext->IASetVertexBuffers(0, 1, vbCube.GetAddressOf(), vbCube.StridePtr(), &offset);
+	this->deviceContext->IASetIndexBuffer(ibCube.Get(), DXGI_FORMAT_R32_UINT, 0);
+	this->deviceContext->DrawIndexed(ibCube.BufferSize(), 0, 0);
+
+	this->deviceContext->RSSetViewports(1, &viewportRight);
+
+	RenderModel(Matrix::Identity);
 
 }
+void Graphics::RenderModel(Matrix worldMatrix)
+{
+	float width = 0.03f;
+	RenderCube(Matrix::CreateScale(width, width, width) * worldMatrix, { 0.3f,0.3f,0.3f,1 });
+	RenderCube(Matrix::CreateTranslation(width, 0, 0) * Matrix::CreateScale(1, width, width) * worldMatrix, { 1,0,0,1 });
+	RenderCube(Matrix::CreateTranslation(0, width, 0) * Matrix::CreateScale(width, 1, width) * worldMatrix, { 0,1,0,1 });
+	RenderCube(Matrix::CreateTranslation(0, 0, width) * Matrix::CreateScale(width, width, 1) * worldMatrix, { 0,0,1,1 });
+}
+void Graphics::RenderCube(Matrix worldMatrix, Vector4 color)
+{
+	UINT offset = 0;
 
+	cbColoredObject.data.worldMatrix = worldMatrix;
+	cbColoredObject.data.wvpMatrix = cbColoredObject.data.worldMatrix * camera.GetViewMatrix() * camera.GetProjectionMatrix();
+	cbColoredObject.data.color = color;
+
+	cbColoredObject.ApplyChanges();
+	this->deviceContext->IASetVertexBuffers(0, 1, vbCube.GetAddressOf(), vbCube.StridePtr(), &offset);
+	this->deviceContext->IASetIndexBuffer(ibCube.Get(), DXGI_FORMAT_R32_UINT, 0);
+	this->deviceContext->DrawIndexed(ibCube.BufferSize(), 0, 0);
+}
 
 bool Graphics::InitializeDirectX(HWND hwnd)
 {
@@ -252,18 +275,26 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 	}
 
 	//Create the Viewport
-	D3D11_VIEWPORT viewport;
-	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+	viewportWidth = this->windowWidth / 2 - 200;
 
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = this->windowWidth;
-	viewport.Height = this->windowHeight;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
+	ZeroMemory(&viewportLeft, sizeof(D3D11_VIEWPORT));
+	viewportLeft.TopLeftX = 400;
+	viewportLeft.TopLeftY = 0;
+	viewportLeft.Width = viewportWidth;
+	viewportLeft.Height = this->windowHeight;
+	viewportLeft.MinDepth = 0.0f;
+	viewportLeft.MaxDepth = 1.0f;
 
-	//Set the Viewport
-	this->deviceContext->RSSetViewports(1, &viewport);
+	ZeroMemory(&viewportRight, sizeof(D3D11_VIEWPORT));
+	viewportRight.TopLeftX = this->windowWidth / 2 + 200;
+	viewportRight.TopLeftY = 0;
+	viewportRight.Width = viewportWidth;
+	viewportRight.Height = this->windowHeight;
+	viewportRight.MinDepth = 0.0f;
+	viewportRight.MaxDepth = 1.0f;
+
+	////Set the Viewport
+	//this->deviceContext->RSSetViewports(1, &viewportRight);
 
 	//Create Rasterizer State
 	D3D11_RASTERIZER_DESC rasterizerDesc;
@@ -351,50 +382,16 @@ bool Graphics::InitializeScene()
 		20, 22, 23, 20, 21, 22,
 	};
 
-	HRESULT hr = this->vbCube.Initialize(this->device.Get(), v, ARRAYSIZE(v));
-	if (FAILED(hr))
-	{
-		ErrorLogger::Log(hr, "Failed to create vertex buffer.");
-		return false;
-	}
-
-	//Load Index Data
-	hr = this->ibCube.Initialize(this->device.Get(), indices, ARRAYSIZE(indices));
-	if (FAILED(hr))
-	{
-		ErrorLogger::Log(hr, "Failed to create indices buffer.");
-		return hr;
-	}
-
-
-	VertexPN dummy_verts[1000];
-	for (int i = 0; i < 1000; i++)
-		dummy_verts[i] = VertexPN(0, 0, 0, 0, 0, 0);
-
-	hr = this->vbProbes.Initialize(this->device.Get(), dummy_verts, ARRAYSIZE(dummy_verts), true);
-	if (FAILED(hr))
-	{
-		ErrorLogger::Log(hr, "Failed to create vertex buffer.");
-		return false;
-	}
+	this->vbCube.Initialize(this->device.Get(), v, ARRAYSIZE(v));
+	this->ibCube.Initialize(this->device.Get(), indices, ARRAYSIZE(indices));
 
 	//Initialize Constant Buffer(s)
-	hr = this->cbColoredObject.Initialize(this->device.Get(), this->deviceContext.Get());
-	if (FAILED(hr))
-	{
-		ErrorLogger::Log(hr, "Failed to initialize constant buffer.");
-		return false;
-	}
+	this->cbColoredObject.Initialize(this->device.Get(), this->deviceContext.Get());
+	this->cbLight.Initialize(this->device.Get(), this->deviceContext.Get());
 
-	hr = this->cbLight.Initialize(this->device.Get(), this->deviceContext.Get());
-	if (FAILED(hr))
-	{
-		ErrorLogger::Log(hr, "Failed to initialize constant buffer.");
-		return false;
-	}
 
 	camera.SetPosition(0, -5.0f, 0);
-	camera.SetProjectionValues(90.0f, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.1f, 1000.0f);
+	camera.SetProjectionValues(60.0f, static_cast<float>(viewportWidth) / static_cast<float>(windowHeight), 0.1f, 1000.0f);
 
 	return true;
 }

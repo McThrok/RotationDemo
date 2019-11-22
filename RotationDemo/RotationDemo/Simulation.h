@@ -36,6 +36,7 @@ public:
 	bool paused;
 	float animationTime;
 	bool slerp;
+	bool loop;
 	int frames;
 
 	vector<Matrix> framesEuler;

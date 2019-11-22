@@ -22,9 +22,9 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{05F48A78-883F-45F3-8AA0-772438E5D60B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>PSiVR</RootNamespace>
+    <RootNamespace>RotationDemo</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>PSiVR</ProjectName>
+    <ProjectName>RotationDemo</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -73,8 +73,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)PSiVR\Includes;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)PSiVR\Libs\x86\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)RotationDemo\Includes;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)RotationDemo\Libs\x86\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -83,8 +83,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)PSiVR\Includes;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)PSiVR\Libs\x86\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)RotationDemo\Includes;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)RotationDemo\Libs\x86\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
