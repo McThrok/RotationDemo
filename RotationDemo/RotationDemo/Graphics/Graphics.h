@@ -31,7 +31,7 @@ private:
 	bool InitializeScene();
 
 	void InitGui(HWND hwnd);
-	void RendeGui();
+	void RenderGui();
 	void RenderMainPanel();
 	void RenderVisualisation();
 	void RenderModel(Matrix worldMatrix);

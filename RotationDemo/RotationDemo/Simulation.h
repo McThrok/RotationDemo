@@ -16,21 +16,17 @@ using namespace DirectX::SimpleMath;
 class Simulation
 {
 public:
-
 	Vector3 startRotation;
 	Vector3 endRotation;
 
-	Quaternion startRotationQ;
-	Quaternion endRotationQ;
+	Vector3 startRotationEuler;
+	Vector3 endRotationEuler;
+
+	Quaternion startRotationQuat;
+	Quaternion endRotationQuat;
 
 	Vector3 startPosition;
 	Vector3 endPosition;
-
-	Vector3 positionEuler;
-	Vector3 rotationEuler;
-
-	Vector3 positionQuat;
-	Quaternion rotationQuat;
 
 	float time;
 	bool paused;
@@ -38,12 +34,14 @@ public:
 	bool slerp;
 	bool loop;
 	int frames;
+	bool showFrames;
 
 	vector<Matrix> framesEuler;
 	vector<Matrix> framesQuat;
 
 	void Init();
 	void Reset();
+	void UpdateValues();
 	void Update(float dt);
 	void UpdateFrames();
 

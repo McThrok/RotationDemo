@@ -30,7 +30,7 @@ void Graphics::RenderFrame()
 	this->deviceContext->ClearDepthStencilView(this->depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	RenderVisualisation();
-	RendeGui();
+	RenderGui();
 	updateFPSCounter();
 
 	this->swapchain->Present(0, NULL);
@@ -60,7 +60,7 @@ void Graphics::InitGui(HWND hwnd) {
 	ImGui::StyleColorsDark();
 }
 
-void Graphics::RendeGui() {
+void Graphics::RenderGui() {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
@@ -97,13 +97,15 @@ void Graphics::RenderMainPanel() {
 	ImGui::Separator();
 	bool update = false;
 	if (ImGui::SliderFloat3("start position", &simulation->startPosition.x, 0, 5)) update = true;
-	if (ImGui::SliderFloat3("end position", &simulation->startPosition.x, 0, 5)) update = true;
-	if (ImGui::SliderFloat3("start rotation", &simulation->startPosition.x, 0, 5)) update = true;
-	if (ImGui::SliderFloat3("end rotation", &simulation->startPosition.x, 0, 5)) update = true;
-	if (update) simulation->Reset();
+	if (ImGui::SliderFloat3("end position", &simulation->endPosition.x, 0, 5)) update = true;
+	if (ImGui::SliderFloat3("start rotation", &simulation->startRotation.x, -180, 180, "%.0f")) update = true;
+	if (ImGui::SliderFloat3("end rotation", &simulation->endRotation.x, -180, 180,"%.0f")) update = true;
+	if (update) simulation->UpdateValues();
 	ImGui::Separator();
 
 	ImGui::Checkbox("slerp", &simulation->slerp);
+	ImGui::Checkbox("loop", &simulation->loop);
+	ImGui::Checkbox("show Frames", &simulation->showFrames);
 	ImGui::SliderFloat("animation time", &simulation->animationTime, 1, 5);
 	ImGui::SliderFloat("animation progress", &simulation->time, 0, simulation->animationTime);
 	if (ImGui::SliderInt("frames", &simulation->frames, 0, 20)) simulation->UpdateFrames();
@@ -126,25 +128,30 @@ void Graphics::RenderVisualisation()
 	this->deviceContext->PSSetConstantBuffers(0, 1, this->cbColoredObject.GetAddressOf());
 
 	this->deviceContext->RSSetViewports(1, &viewportLeft);
+	RenderModel(simulation->GetModelMatrixEuler(0));
+	RenderModel(simulation->GetModelMatrixEuler(1));
 
-	cbColoredObject.data.worldMatrix = Matrix::Identity;
-	cbColoredObject.data.wvpMatrix = cbColoredObject.data.worldMatrix * camera.GetViewMatrix() * camera.GetProjectionMatrix();
-	cbColoredObject.data.color = { 0.8f, 0.4f, 0.0f, 1.0f };
+	RenderModel(simulation->GetModelMatrixEuler());
 
-	if (!cbColoredObject.ApplyChanges()) return;
-	this->deviceContext->IASetVertexBuffers(0, 1, vbCube.GetAddressOf(), vbCube.StridePtr(), &offset);
-	this->deviceContext->IASetIndexBuffer(ibCube.Get(), DXGI_FORMAT_R32_UINT, 0);
-	this->deviceContext->DrawIndexed(ibCube.BufferSize(), 0, 0);
+	if(simulation->showFrames)
+		for (auto m : simulation->framesEuler)
+			RenderModel(m);
 
 	this->deviceContext->RSSetViewports(1, &viewportRight);
+	RenderModel(simulation->GetModelMatrixQuat(0));
+	RenderModel(simulation->GetModelMatrixQuat(1));
 
-	RenderModel(Matrix::Identity);
+	RenderModel(simulation->GetModelMatrixQuat());
+
+	if (simulation->showFrames)
+		for (auto m : simulation->framesQuat)
+			RenderModel(m);
 
 }
 void Graphics::RenderModel(Matrix worldMatrix)
 {
 	float width = 0.03f;
-	RenderCube(Matrix::CreateScale(width, width, width) * worldMatrix, { 0.3f,0.3f,0.3f,1 });
+	RenderCube(Matrix::CreateScale(width, width, width) * worldMatrix, { 0.3f, 0.3f, 0.3f, 1 });
 	RenderCube(Matrix::CreateTranslation(width, 0, 0) * Matrix::CreateScale(1, width, width) * worldMatrix, { 1,0,0,1 });
 	RenderCube(Matrix::CreateTranslation(0, width, 0) * Matrix::CreateScale(width, 1, width) * worldMatrix, { 0,1,0,1 });
 	RenderCube(Matrix::CreateTranslation(0, 0, width) * Matrix::CreateScale(width, width, 1) * worldMatrix, { 0,0,1,1 });

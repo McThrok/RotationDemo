@@ -3,13 +3,15 @@
 void Simulation::Init()
 {
 	startRotation = Vector3(0, 0, 0);
-	endRotation = Vector3(0, -XM_PIDIV4, 0);
+	endRotation = Vector3(0, 90, 0);
+
 	startPosition = Vector3(0, 0, 0);
-	endPosition = Vector3(2, 0, 2);
+	endPosition = Vector3(2, 0, 0);
 
 	paused = false;
 	slerp = false;
 	loop = false;
+	showFrames = false;
 	frames = 5;
 	animationTime = 2.0f;
 
@@ -18,15 +20,20 @@ void Simulation::Init()
 
 void Simulation::Reset()
 {
-	positionEuler = startPosition;
-	rotationEuler = startRotation;
-
-	startRotationQ = EtoQ(startRotation);
-	endRotationQ = EtoQ(endRotation);
-
-	positionQuat = startPosition;
-	rotationQuat = EtoQ(startRotation);
+	UpdateValues();
+	UpdateFrames();
 	time = 0;
+}
+
+void Simulation::UpdateValues()
+{
+	startRotationEuler = startRotation * XM_PI / 180;
+	endRotationEuler = endRotation * XM_PI / 180;
+
+	startRotationQuat = EtoQ(startRotationEuler);
+	endRotationQuat = EtoQ(endRotationEuler);
+
+	UpdateFrames();
 }
 
 void Simulation::Update(float dt)
@@ -34,10 +41,13 @@ void Simulation::Update(float dt)
 	if (!paused)
 		time += dt / 1000.0f;
 
-	if (loop)
-		time -= animationTime;
-	else
-		time = min(time, animationTime);
+	if (time > animationTime)
+	{
+		if (loop)
+			time -= animationTime;
+		else
+			time = min(time, animationTime);
+	}
 }
 
 void Simulation::UpdateFrames()
@@ -45,9 +55,9 @@ void Simulation::UpdateFrames()
 	framesEuler.clear();
 	framesQuat.clear();
 
-	for (int i = 0; i < frames + 2; i++)
+	for (int i = 1; i < frames + 1; i++)
 	{
-		float animationProgress = i / (frames + 1);
+		float animationProgress = 1.0f * i / (frames + 1);
 		framesEuler.push_back(GetModelMatrixEuler(animationProgress));
 		framesQuat.push_back(GetModelMatrixQuat(animationProgress));
 	}
@@ -61,9 +71,9 @@ Quaternion Simulation::EtoQ(Vector3 rotation)
 Matrix Simulation::GetModelMatrixEuler(float animationProgress)
 {
 	Vector3 pos = (endPosition - startPosition) * animationProgress + startPosition;
-	Vector3 rot = (endRotation - startRotation) * animationProgress + endRotation;
+	Vector3 rot = (endRotationEuler - startRotationEuler) * animationProgress + startRotationEuler;
 
-	return Matrix::CreateTranslation(pos) * Matrix::CreateFromYawPitchRoll(rot.x, rot.y, rot.z);//check order!!
+	return Matrix::CreateFromYawPitchRoll(rot.y, rot.x, rot.z) * Matrix::CreateTranslation(pos);//check order!!
 }
 
 Matrix Simulation::GetModelMatrixQuat(float animationProgress)
@@ -71,11 +81,11 @@ Matrix Simulation::GetModelMatrixQuat(float animationProgress)
 	Vector3 pos = (endPosition - startPosition) * animationProgress + startPosition;
 	Quaternion rot;
 	if (slerp)
-		rot = Quaternion::Slerp(startRotationQ, endRotationQ, animationProgress);
+		rot = Quaternion::Slerp(startRotationQuat, endRotationQuat, animationProgress);
 	else
-		rot = Quaternion::Lerp(startRotationQ, endRotationQ, animationProgress);
+		rot = Quaternion::Lerp(startRotationQuat, endRotationQuat, animationProgress);
 
-	return Matrix::CreateTranslation(pos) * Matrix::CreateFromQuaternion(rot);
+	return  Matrix::CreateFromQuaternion(rot) * Matrix::CreateTranslation(pos);
 }
 
 Matrix Simulation::GetModelMatrixEuler()
