@@ -11,42 +11,41 @@ using namespace std;
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
+
+
 class Simulation
 {
 public:
-	Matrix initialRotation;
-	float delta_time;
+
+	Vector3 startRotation;
+	Vector3 endRotation;
+
+	Quaternion startRotationQ;
+	Quaternion endRotationQ;
+
+	Vector3 startPosition;
+	Vector3 endPosition;
+
+	Vector3 positionEuler;
+	Vector3 rotationEuler;
+
+	Vector3 positionQuat;
+	Quaternion rotationQuat;
+
 	float time;
 	bool paused;
-	bool gravityOn;
-
-	int initialAngle;
-	float cubeSize;
-	float simulationSpeed;
-	float density;
-	float initialVelocity;
-
-	Matrix InvI;
-	Vector3 G;
-	Vector3 R;
-
-	Quaternion Q;
-	Vector3 W;
-	Matrix I;
-
-	vector<VertexPN> probes;
-	int maxProbes;
-	int probesCycleCount;
-	int probesCounter;
-
+	float animationTime;
+	bool slerp;
 
 	void Init();
 	void Reset();
 	void Update(float dt);
-	void Update();
+	void UpdateEuler(float animationProgress);
+	void UpdateQuat(float animationProgress);
 
-	Matrix GetModelMatrix();
-	void UpdateTensor();
-	void UpdateProbes();
+	Matrix GetModelMatrixEuler();
+	Matrix GetModelMatrixQuat();
+
+	Quaternion EtoQ(Vector3 vecotr);
 };
 

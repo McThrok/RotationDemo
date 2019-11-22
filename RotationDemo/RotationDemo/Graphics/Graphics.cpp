@@ -401,58 +401,7 @@ bool Graphics::InitializeScene()
 		12, 14, 15, 12, 13, 14,
 		16, 18, 19, 16, 17, 18,
 		20, 22, 23, 20, 21, 22,
-
-		//0,3,2,0,2,1,
-		//4,7,6,4,6,5,
-		//8,11,10,8,10,9,
-		//12,15,14,12,14,13,
-		//16,19,18,16,18,17,
-		//20,23,22,20,22,21
 	};
-
-	/*XMFLOAT3 p[] = {
-		{ 0.000000 ,0.000000, 0.000000 },
-		{ 0.000000 ,1.154701, 1.632993 },
-		{ -1.414214 ,1.154701, -0.816497 },
-		{ -1.414214 ,2.309401, 0.816497 },
-		{ 1.414214 ,1.154701, -0.816497 },
-		{ 1.414214 ,2.309401, 0.816497 },
-		{ 0.000000 ,2.309401, -1.632993 },
-		{ 0.000000 ,3.464102, 0.000000 },
-	};
-
-	XMFLOAT3 n[] = {
-		{ -0.7071, -0.5774, 0.4082 },
-		{ -0.7071, 0.5774 , -0.4082},
-		{ 0.7071 , 0.5774 , -0.4082},
-		{ 0.7071 , -0.5774, 0.4082 },
-		{ -0.0000, -0.5774, -0.8165},
-		{ 0.0000 , 0.5774 ,0.8165 },
-	};
-
-	VertexPN v[] = {
-		VertexPN(p[1],n[0]),VertexPN(p[2],n[0]),VertexPN(p[0],n[0]),
-		VertexPN(p[3],n[1]),VertexPN(p[6],n[1]),VertexPN(p[2],n[1]),
-
-		VertexPN(p[7],n[2]),VertexPN(p[4],n[2]),VertexPN(p[6],n[2]),
-		VertexPN(p[4],n[3]),VertexPN(p[1],n[3]),VertexPN(p[0],n[3]),
-
-		VertexPN(p[6],n[4]),VertexPN(p[0],n[4]),VertexPN(p[2],n[4]),
-		VertexPN(p[3],n[5]),VertexPN(p[5],n[5]),VertexPN(p[7],n[5]),
-
-		VertexPN(p[1],n[0]),VertexPN(p[3],n[0]),VertexPN(p[2],n[0]),
-		VertexPN(p[3],n[1]),VertexPN(p[7],n[1]),VertexPN(p[6],n[1]),
-
-		VertexPN(p[7],n[2]),VertexPN(p[5],n[2]),VertexPN(p[4],n[2]),
-		VertexPN(p[4],n[3]),VertexPN(p[5],n[3]),VertexPN(p[1],n[3]),
-
-		VertexPN(p[6],n[4]),VertexPN(p[4],n[4]),VertexPN(p[0],n[4]),
-		VertexPN(p[3],n[5]),VertexPN(p[1],n[5]),VertexPN(p[5],n[5]),
-	};
-
-	int indices[36];
-	for (int i = 0; i < 36; i++)
-		indices[i] = i;*/
 
 	HRESULT hr = this->vbCube.Initialize(this->device.Get(), v, ARRAYSIZE(v));
 	if (FAILED(hr))
