@@ -31,25 +31,10 @@ void Graphics::RenderFrame()
 
 	RenderVisualisation();
 	RenderGui();
-	updateFPSCounter();
 
 	this->swapchain->Present(0, NULL);
 }
 
-void Graphics::updateFPSCounter() {
-	static int fpsCounter = 0;
-	static std::string fpsString = "FPS: 0";
-	fpsCounter += 1;
-	if (fpsTimer.GetMilisecondsElapsed() > 1000.0)
-	{
-		fpsString = "FPS: " + std::to_string(fpsCounter);
-		fpsCounter = 0;
-		fpsTimer.Restart();
-	}
-	spriteBatch->Begin();
-	spriteFont->DrawString(spriteBatch.get(), StringConverter::StringToWide(fpsString).c_str(), DirectX::XMFLOAT2(0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f));
-	spriteBatch->End();
-}
 
 void Graphics::InitGui(HWND hwnd) {
 	IMGUI_CHECKVERSION();
@@ -119,15 +104,14 @@ void Graphics::RenderVisualisation()
 	this->deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	this->deviceContext->RSSetState(this->rasterizerState.Get());
 	this->deviceContext->OMSetDepthStencilState(this->depthStencilState.Get(), 0);
+
 	this->deviceContext->VSSetShader(vertexshader.GetShader(), NULL, 0);
 	this->deviceContext->PSSetShader(pixelshader.GetShader(), NULL, 0);
-
-	UINT offset = 0;
-
 	this->deviceContext->VSSetConstantBuffers(0, 1, this->cbColoredObject.GetAddressOf());
 	this->deviceContext->PSSetConstantBuffers(0, 1, this->cbColoredObject.GetAddressOf());
 
-	this->deviceContext->RSSetViewports(1, &viewportLeft);
+	//top
+	this->deviceContext->RSSetViewports(1, &viewportTop);
 	RenderModel(simulation->GetModelMatrixEuler(0));
 	RenderModel(simulation->GetModelMatrixEuler(1));
 
@@ -137,7 +121,8 @@ void Graphics::RenderVisualisation()
 		for (auto m : simulation->framesEuler)
 			RenderModel(m);
 
-	this->deviceContext->RSSetViewports(1, &viewportRight);
+	//down
+	this->deviceContext->RSSetViewports(1, &viewportDown);
 	RenderModel(simulation->GetModelMatrixQuat(0));
 	RenderModel(simulation->GetModelMatrixQuat(1));
 
@@ -282,23 +267,23 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 	}
 
 	//Create the Viewport
-	viewportWidth = this->windowWidth / 2 - 200;
+	viewportHeight = this->windowHeight / 2;
 
-	ZeroMemory(&viewportLeft, sizeof(D3D11_VIEWPORT));
-	viewportLeft.TopLeftX = 400;
-	viewportLeft.TopLeftY = 0;
-	viewportLeft.Width = viewportWidth;
-	viewportLeft.Height = this->windowHeight;
-	viewportLeft.MinDepth = 0.0f;
-	viewportLeft.MaxDepth = 1.0f;
+	ZeroMemory(&viewportTop, sizeof(D3D11_VIEWPORT));
+	viewportTop.TopLeftX = 0;
+	viewportTop.TopLeftY = 0;
+	viewportTop.Width = this->windowWidth;
+	viewportTop.Height = viewportHeight;
+	viewportTop.MinDepth = 0.0f;
+	viewportTop.MaxDepth = 1.0f;
 
-	ZeroMemory(&viewportRight, sizeof(D3D11_VIEWPORT));
-	viewportRight.TopLeftX = this->windowWidth / 2 + 200;
-	viewportRight.TopLeftY = 0;
-	viewportRight.Width = viewportWidth;
-	viewportRight.Height = this->windowHeight;
-	viewportRight.MinDepth = 0.0f;
-	viewportRight.MaxDepth = 1.0f;
+	ZeroMemory(&viewportDown, sizeof(D3D11_VIEWPORT));
+	viewportDown.TopLeftX = 0;
+	viewportDown.TopLeftY = viewportHeight;
+	viewportDown.Width = this->windowWidth;
+	viewportDown.Height = viewportHeight;
+	viewportDown.MinDepth = 0.0f;
+	viewportDown.MaxDepth = 1.0f;
 
 	////Set the Viewport
 	//this->deviceContext->RSSetViewports(1, &viewportRight);
@@ -398,7 +383,7 @@ bool Graphics::InitializeScene()
 
 
 	camera.SetPosition(0, -5.0f, 0);
-	camera.SetProjectionValues(60.0f, static_cast<float>(viewportWidth) / static_cast<float>(windowHeight), 0.1f, 1000.0f);
+	camera.SetProjectionValues(60.0f, static_cast<float>(windowWidth) / static_cast<float>(viewportHeight), 0.1f, 1000.0f);
 
 	return true;
 }

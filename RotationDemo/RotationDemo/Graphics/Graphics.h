@@ -40,9 +40,9 @@ private:
 	void updateFPSCounter();
 
 
-	int viewportWidth;
-	D3D11_VIEWPORT viewportLeft;
-	D3D11_VIEWPORT viewportRight;
+	int viewportHeight;
+	D3D11_VIEWPORT viewportTop;
+	D3D11_VIEWPORT viewportDown;
 
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
