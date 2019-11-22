@@ -94,26 +94,19 @@ void Graphics::RenderMainPanel() {
 		simulation->Reset();
 	}
 
-	ImGui::SliderFloat("delta time", &simulation->delta_time, 0.01f, 0.2f);
-
-	ImGui::Checkbox("show cube", &guiData->showCube);
-	ImGui::Checkbox("show gravity", &guiData->showGravity);
-	ImGui::Checkbox("show probes", &guiData->showProbes);
-	ImGui::Checkbox("show diagonal", &guiData->showDiagonal);
-	ImGui::Checkbox("center of mass", &guiData->showMassCenter);
-
 	ImGui::Separator();
 	bool update = false;
-	if (ImGui::SliderFloat("cube size", &simulation->cubeSize, 0.1, 10)) update = true;
-	if (ImGui::SliderFloat("density", &simulation->density, 0.1, 10)) update = true;
-	if (ImGui::SliderInt("initial angle", &simulation->initialAngle, -180, 180)) update = true;
-	if (ImGui::SliderFloat("initial angular velocity", &simulation->initialVelocity, 0, 5)) update = true;
+	if (ImGui::SliderFloat3("start position", &simulation->startPosition.x, 0, 5)) update = true;
+	if (ImGui::SliderFloat3("end position", &simulation->startPosition.x, 0, 5)) update = true;
+	if (ImGui::SliderFloat3("start rotation", &simulation->startPosition.x, 0, 5)) update = true;
+	if (ImGui::SliderFloat3("end rotation", &simulation->startPosition.x, 0, 5)) update = true;
 	if (update) simulation->Reset();
 	ImGui::Separator();
 
-	ImGui::Checkbox("gravity", &simulation->gravityOn);
-	ImGui::SliderFloat("simulation speed", &simulation->simulationSpeed, 0.1, 10);
-	ImGui::SliderInt("probes count", &simulation->maxProbes, 50, 500);
+	ImGui::Checkbox("slerp", &simulation->slerp);
+	ImGui::SliderFloat("animation time", &simulation->animationTime, 1, 5);
+	ImGui::SliderFloat("animation progress", &simulation->time, 0, simulation->animationTime);
+	if (ImGui::SliderInt("frames", &simulation->frames, 0, 20)) simulation->UpdateFrames();
 
 	ImGui::End();
 }
@@ -132,7 +125,7 @@ void Graphics::RenderVisualisation()
 	this->deviceContext->VSSetConstantBuffers(0, 1, this->cbColoredObject.GetAddressOf());
 	this->deviceContext->PSSetConstantBuffers(0, 1, this->cbColoredObject.GetAddressOf());
 
-	if (guiData->showCube)
+	/*if (guiData->showCube)
 	{
 		cbColoredObject.data.worldMatrix = simulation->GetModelMatrix();
 		cbColoredObject.data.wvpMatrix = cbColoredObject.data.worldMatrix * camera.GetViewMatrix() * camera.GetProjectionMatrix();
@@ -142,53 +135,8 @@ void Graphics::RenderVisualisation()
 		this->deviceContext->IASetVertexBuffers(0, 1, vbCube.GetAddressOf(), vbCube.StridePtr(), &offset);
 		this->deviceContext->IASetIndexBuffer(ibCube.Get(), DXGI_FORMAT_R32_UINT, 0);
 		this->deviceContext->DrawIndexed(ibCube.BufferSize(), 0, 0);
-	}
+	}*/
 
-	if (guiData->showMassCenter) {
-		cbColoredObject.data.worldMatrix = Matrix::CreateTranslation(-0.5, -0.5, -0.5) * Matrix::CreateScale(0.1f, 0.1f, 0.1f)
-			* Matrix::CreateTranslation(0.5f, 0.5f, 0.5f) * simulation->GetModelMatrix();
-		cbColoredObject.data.wvpMatrix = cbColoredObject.data.worldMatrix * camera.GetViewMatrix() * camera.GetProjectionMatrix();
-		cbColoredObject.data.color = { 0.2f,0.8f,0.2f,1.0f };
-
-		if (!cbColoredObject.ApplyChanges()) return;
-		this->deviceContext->IASetVertexBuffers(0, 1, vbCube.GetAddressOf(), vbCube.StridePtr(), &offset);
-		this->deviceContext->IASetIndexBuffer(ibCube.Get(), DXGI_FORMAT_R32_UINT, 0);
-		this->deviceContext->DrawIndexed(ibCube.BufferSize(), 0, 0);
-
-	}
-
-	if (guiData->showDiagonal)
-	{
-		cbColoredObject.data.worldMatrix = Matrix::CreateTranslation(-0.5, -0.5, 0) * Matrix::CreateScale(0.03f, 0.03f, sqrtf(3))
-			* XMMatrixRotationY(XMScalarACos(sqrtf(3) / 3)) * XMMatrixRotationZ(XM_PI / 4) * simulation->GetModelMatrix();
-		cbColoredObject.data.wvpMatrix = cbColoredObject.data.worldMatrix * camera.GetViewMatrix() * camera.GetProjectionMatrix();
-		cbColoredObject.data.color = { 1.0f,0.2f,0.2f,1.0f };
-
-		if (!cbColoredObject.ApplyChanges()) return;
-		this->deviceContext->IASetVertexBuffers(0, 1, vbCube.GetAddressOf(), vbCube.StridePtr(), &offset);
-		this->deviceContext->IASetIndexBuffer(ibCube.Get(), DXGI_FORMAT_R32_UINT, 0);
-		this->deviceContext->DrawIndexed(ibCube.BufferSize(), 0, 0);
-	}
-
-	if (guiData->showProbes)
-	{
-		this->deviceContext->PSSetShader(diagonalPixelshader.GetShader(), NULL, 0);
-
-		cbColoredObject.data.worldMatrix = Matrix::Identity;
-		cbColoredObject.data.wvpMatrix = cbColoredObject.data.worldMatrix * camera.GetViewMatrix() * camera.GetProjectionMatrix();
-		cbColoredObject.data.color = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-		if (!cbColoredObject.ApplyChanges()) return;
-		this->deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_LINESTRIP);
-
-		D3D11_MAPPED_SUBRESOURCE resource;
-		this->deviceContext->Map(vbProbes.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-		memcpy(resource.pData, simulation->probes.data(), simulation->probes.size() * sizeof(VertexPN));
-		this->deviceContext->Unmap(vbProbes.Get(), 0);
-
-		this->deviceContext->IASetVertexBuffers(0, 1, vbProbes.GetAddressOf(), vbProbes.StridePtr(), &offset);
-		this->deviceContext->Draw(simulation->probes.size(), 0);
-	}
 }
 
 

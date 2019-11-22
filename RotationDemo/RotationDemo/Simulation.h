@@ -36,13 +36,18 @@ public:
 	bool paused;
 	float animationTime;
 	bool slerp;
+	int frames;
+
+	vector<Matrix> framesEuler;
+	vector<Matrix> framesQuat;
 
 	void Init();
 	void Reset();
 	void Update(float dt);
-	void UpdateEuler(float animationProgress);
-	void UpdateQuat(float animationProgress);
+	void UpdateFrames();
 
+	Matrix GetModelMatrixEuler(float animationProgress);
+	Matrix GetModelMatrixQuat(float animationProgress);
 	Matrix GetModelMatrixEuler();
 	Matrix GetModelMatrixQuat();
 

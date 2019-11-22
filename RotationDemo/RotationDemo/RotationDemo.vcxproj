@@ -206,7 +206,6 @@ copy "$(OutDir)*.cso" "$(ProjectDir)"</Command>
     <ClInclude Include="Graphics\ImGui\imstb_truetype.h" />
     <ClInclude Include="Graphics\IndexBuffer.h" />
     <ClInclude Include="Graphics\MyImGui.h" />
-    <ClInclude Include="GuiData.h" />
     <ClInclude Include="Keyboard\KeyboardClass.h" />
     <ClInclude Include="Keyboard\KeyboardEvent.h" />
     <ClInclude Include="Mouse\MouseClass.h" />

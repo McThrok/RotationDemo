@@ -10,12 +10,10 @@
 #include "ConstantBuffer.h"
 #include "Camera.h"
 #include "..\\Timer.h"
-#include "MyImGui.h"
 #include "..\\Simulation.h"
 #include "ImGUI\\imgui.h"
 #include "ImGUI\\imgui_impl_win32.h"
 #include "ImGUI\\imgui_impl_dx11.h"
-#include "..\\GuiData.h"
 
 using namespace std;
 
@@ -27,7 +25,6 @@ public:
 	void RenderFrame();
 	Camera camera;
 	Simulation* simulation;
-	GuiData * guiData;
 private:
 	bool InitializeDirectX(HWND hwnd);
 	bool InitializeShaders();

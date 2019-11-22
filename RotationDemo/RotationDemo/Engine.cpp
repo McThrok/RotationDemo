@@ -11,7 +11,6 @@ bool Engine::Initialize(HINSTANCE hInstance, std::string window_title, std::stri
 		return false;
 
 	gfx.simulation = &simulation;
-	gfx.guiData = &guiData;
 	simulation.Init();
 
 	return true;
