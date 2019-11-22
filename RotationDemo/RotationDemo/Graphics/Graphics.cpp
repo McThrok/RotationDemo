@@ -99,11 +99,11 @@ void Graphics::RenderMainPanel() {
 	if (ImGui::SliderFloat3("start position", &simulation->startPosition.x, 0, 5)) update = true;
 	if (ImGui::SliderFloat3("end position", &simulation->endPosition.x, 0, 5)) update = true;
 	if (ImGui::SliderFloat3("start rotation", &simulation->startRotation.x, -180, 180, "%.0f")) update = true;
-	if (ImGui::SliderFloat3("end rotation", &simulation->endRotation.x, -180, 180,"%.0f")) update = true;
+	if (ImGui::SliderFloat3("end rotation", &simulation->endRotation.x, -180, 180, "%.0f")) update = true;
 	if (update) simulation->UpdateValues();
 	ImGui::Separator();
 
-	ImGui::Checkbox("slerp", &simulation->slerp);
+	if (ImGui::Checkbox("slerp", &simulation->slerp)) simulation->UpdateFrames();
 	ImGui::Checkbox("loop", &simulation->loop);
 	ImGui::Checkbox("show Frames", &simulation->showFrames);
 	ImGui::SliderFloat("animation time", &simulation->animationTime, 1, 5);
@@ -133,7 +133,7 @@ void Graphics::RenderVisualisation()
 
 	RenderModel(simulation->GetModelMatrixEuler());
 
-	if(simulation->showFrames)
+	if (simulation->showFrames)
 		for (auto m : simulation->framesEuler)
 			RenderModel(m);
 
