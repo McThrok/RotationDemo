@@ -63,9 +63,33 @@ void Simulation::UpdateFrames()
 	}
 }
 
-Quaternion Simulation::EtoQ(Vector3 rotation)
+Quaternion Simulation::EtoQ(Vector3 v)
 {
-	return XMQuaternionRotationRollPitchYawFromVector(rotation);
+	return XMQuaternionRotationRollPitchYawFromVector(v);
+}
+
+Vector3 Simulation::QtoE(Quaternion q)
+{
+	Vector3 angles;
+
+	// roll (x-axis rotation)
+	double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+	double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+	angles.x = atan2f(sinr_cosp, cosr_cosp);
+
+	// pitch (y-axis rotation)
+	double sinp = 2 * (q.w * q.y - q.z * q.x);
+	if (std::abs(sinp) >= 1)
+		angles.y = copysignf(XM_PIDIV2, sinp); // use 90 degrees if out of range
+	else
+		angles.y = asinf(sinp);
+
+	// yaw (z-axis rotation)
+	double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+	double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+	angles.z = atan2(siny_cosp, cosy_cosp);
+
+	return angles;
 }
 
 Matrix Simulation::GetModelMatrixEuler(float animationProgress)

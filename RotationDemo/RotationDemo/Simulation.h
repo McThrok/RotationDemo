@@ -4,6 +4,7 @@
 #include <math.h> 
 #include <DirectXMath.h>
 #include <SimpleMath.h>
+#include <algorithm>
 
 #include "Graphics/Vertex.h"
 
@@ -50,6 +51,7 @@ public:
 	Matrix GetModelMatrixEuler();
 	Matrix GetModelMatrixQuat();
 
-	Quaternion EtoQ(Vector3 vecotr);
+	Quaternion EtoQ(Vector3 v);
+	Vector3 QtoE(Quaternion q);
 };
 
