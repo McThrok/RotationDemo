@@ -41,6 +41,8 @@ public:
 	void Reset();
 	void Update(float dt);
 	void UpdateFrames();
+	void UpdateFramesEuler();
+	void UpdateFramesQuat();
 
 	void UpdateRotationsFromEuler();
 	void UpdateRotationsFromQuat();

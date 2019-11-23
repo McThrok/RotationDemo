@@ -13,7 +13,8 @@ void Simulation::Init()
 	animationTime = 2.0f;
 
 	Reset();
-	UpdateFrames();
+	UpdateFramesEuler();
+	UpdateFramesQuat();
 	UpdateRotationsFromEuler();
 }
 
@@ -27,15 +28,20 @@ void Simulation::UpdateRotationsFromEuler()
 	startRotationQuat = EtoQ(startRotationEuler * XM_PI / 180);
 	endRotationQuat = EtoQ(endRotationEuler * XM_PI / 180);
 
-	UpdateFrames();
+	UpdateFramesEuler();
+	UpdateFramesQuat();
 }
 
 void Simulation::UpdateRotationsFromQuat()
 {
-	startRotationEuler = QtoE(startRotationQuat ) / XM_PI * 180;
-	endRotationEuler = QtoE(endRotationQuat ) / XM_PI * 180;
+	startRotationQuat.Normalize();
+	endRotationQuat.Normalize();
 
-	UpdateFrames();
+	startRotationEuler = QtoE(startRotationQuat) / XM_PI * 180;
+	endRotationEuler = QtoE(endRotationQuat) / XM_PI * 180;
+
+	UpdateFramesEuler();
+	UpdateFramesQuat();
 }
 
 void Simulation::Update(float dt)
@@ -54,13 +60,27 @@ void Simulation::Update(float dt)
 
 void Simulation::UpdateFrames()
 {
+	UpdateFramesEuler(); 
+	UpdateFramesQuat();
+}
+void Simulation::UpdateFramesEuler()
+{
 	framesEuler.clear();
-	framesQuat.clear();
 
 	for (int i = 1; i < frames + 1; i++)
 	{
 		float animationProgress = 1.0f * i / (frames + 1);
 		framesEuler.push_back(GetModelMatrixEuler(animationProgress));
+	}
+}
+
+void Simulation::UpdateFramesQuat()
+{
+	framesQuat.clear();
+
+	for (int i = 1; i < frames + 1; i++)
+	{
+		float animationProgress = 1.0f * i / (frames + 1);
 		framesQuat.push_back(GetModelMatrixQuat(animationProgress));
 	}
 }
@@ -93,6 +113,15 @@ Vector3 Simulation::QtoE(Quaternion q)
 	angles.z = atan2(siny_cosp, cosy_cosp);
 
 	return angles;
+}
+
+Matrix Simulation::GetRotationMatrix(Vector3 v)
+{
+	Matrix m = Matrix::Identity;
+	m *= Matrix::CreateRotationX(v.x);
+	m *= Matrix::CreateRotationY(v.y);
+	m *= Matrix::CreateRotationZ(v.z);
+	return m;
 }
 
 Matrix Simulation::GetModelMatrixEuler(float animationProgress)
@@ -130,23 +159,50 @@ Matrix Simulation::GetModelMatrixEuler(float animationProgress)
 	return GetRotationMatrix(rot) * Matrix::CreateTranslation(pos);
 }
 
-Matrix Simulation::GetRotationMatrix(Vector3 v)
-{
-	Matrix m = Matrix::Identity;
-	m *= Matrix::CreateRotationX(v.x);
-	m *= Matrix::CreateRotationY(v.y);
-	m *= Matrix::CreateRotationZ(v.z);
-	return m;
-}
-
 Matrix Simulation::GetModelMatrixQuat(float animationProgress)
 {
 	Vector3 pos = (endPosition - startPosition) * animationProgress + startPosition;
+
+	auto s = startRotationQuat;
+	auto e = endRotationQuat;
+
+	s.Normalize();
+	e.Normalize();
+
 	Quaternion rot;
-	if (slerp)
-		rot = Quaternion::Slerp(startRotationQuat, endRotationQuat, animationProgress);
+
+	if (!slerp)
+	{
+		rot = (e - s) * animationProgress + s;
+	}
 	else
-		rot = Quaternion::Lerp(startRotationQuat, endRotationQuat, animationProgress);
+	{
+		float dot = s.Dot(e);
+
+		if (dot < 0.0f) {
+			e = -e;
+			dot = -dot;
+		}
+
+		const float eps = 0.9995f;
+		if (dot > eps) {
+			Quaternion rot = s + animationProgress * (e - s);
+		}
+		else
+		{
+			float theta_0 = acosf(dot);        
+			float theta = theta_0 * animationProgress;         
+			float sin_theta = sinf(theta);     
+			float sin_theta_0 = sinf(theta_0); 
+			
+			float s0 = cosf(theta) - dot * sin_theta / sin_theta_0;  
+			float s1 = sin_theta / sin_theta_0;
+
+			rot = (s0 * s) + (s1 * e);
+		}
+	}
+
+	rot.Normalize();
 
 	return  Matrix::CreateFromQuaternion(rot) * Matrix::CreateTranslation(pos);
 }

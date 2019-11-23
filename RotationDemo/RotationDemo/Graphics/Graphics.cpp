@@ -80,24 +80,24 @@ void Graphics::RenderMainPanel() {
 	}
 
 	ImGui::Separator();
-	ImGui::SliderFloat3("start position", &simulation->startPosition.x, 0, 5);
-	ImGui::SliderFloat3("end position", &simulation->endPosition.x, 0, 5);
+	if (ImGui::SliderFloat3("start position", &simulation->startPosition.x, 0, 5)) simulation->UpdateFrames();
+	if (ImGui::SliderFloat3("end position", &simulation->endPosition.x, 0, 5)) simulation->UpdateFrames();
 
 	ImGui::Separator();
-	ImGui::SliderFloat3("start rotation Euler", &simulation->startRotationEuler.x, -180, 180, "%.0f");
-	ImGui::SliderFloat3("end rotation Euler", &simulation->endRotationEuler.x, -180, 180, "%.0f");
+	if (ImGui::SliderFloat3("start rotation Euler", &simulation->startRotationEuler.x, -180, 180, "%.0f")) simulation->UpdateFramesEuler();
+	if (ImGui::SliderFloat3("end rotation Euler", &simulation->endRotationEuler.x, -180, 180, "%.0f")) simulation->UpdateFramesEuler();
 	if (ImGui::Button("Apply##Euler"))
 		simulation->UpdateRotationsFromEuler();
 
 	ImGui::Separator();
-	ImGui::SliderFloat4("start rotation Quat", &simulation->startRotationQuat.x, -5, 5, "%.2f");
-	ImGui::SliderFloat4("end rotation Quat", &simulation->endRotationQuat.x, -5, 5, "%.2f");
+	if (ImGui::SliderFloat4("start rotation Quat", &simulation->startRotationQuat.x, -5, 5, "%.2f")) simulation->UpdateFramesQuat();
+	if (ImGui::SliderFloat4("end rotation Quat", &simulation->endRotationQuat.x, -5, 5, "%.2f")) simulation->UpdateFramesQuat();
 	if (ImGui::Button("Apply##Quat"))
 		simulation->UpdateRotationsFromQuat();
 
 	ImGui::Separator();
 
-	if (ImGui::Checkbox("slerp", &simulation->slerp)) simulation->UpdateFrames();
+	if (ImGui::Checkbox("slerp", &simulation->slerp)) simulation->UpdateFramesQuat();
 	ImGui::Checkbox("loop", &simulation->loop);
 	ImGui::Checkbox("show Frames", &simulation->showFrames);
 	ImGui::SliderFloat("animation time", &simulation->animationTime, 1, 5);
