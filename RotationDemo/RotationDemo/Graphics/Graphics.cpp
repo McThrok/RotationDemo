@@ -57,7 +57,7 @@ void Graphics::RenderGui() {
 }
 
 void Graphics::RenderMainPanel() {
-	ImGui::SetNextWindowSize(ImVec2(400, 950), ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(500, 950), ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(10, 30), ImGuiCond_Once);
 	if (!ImGui::Begin("Main Panel"))
 	{
@@ -80,12 +80,21 @@ void Graphics::RenderMainPanel() {
 	}
 
 	ImGui::Separator();
-	bool update = false;
-	if (ImGui::SliderFloat3("start position", &simulation->startPosition.x, 0, 5)) update = true;
-	if (ImGui::SliderFloat3("end position", &simulation->endPosition.x, 0, 5)) update = true;
-	if (ImGui::SliderFloat3("start rotation", &simulation->startRotation.x, -180, 180, "%.0f")) update = true;
-	if (ImGui::SliderFloat3("end rotation", &simulation->endRotation.x, -180, 180, "%.0f")) update = true;
-	if (update) simulation->UpdateValues();
+	ImGui::SliderFloat3("start position", &simulation->startPosition.x, 0, 5);
+	ImGui::SliderFloat3("end position", &simulation->endPosition.x, 0, 5);
+
+	ImGui::Separator();
+	ImGui::SliderFloat3("start rotation Euler", &simulation->startRotationEulerUI.x, -180, 180, "%.0f");
+	ImGui::SliderFloat3("end rotation Euler", &simulation->endRotationEulerUI.x, -180, 180, "%.0f");
+	if (ImGui::Button("Apply##Euler"))
+		simulation->UpdateRotationsFromEuler();
+
+	ImGui::Separator();
+	ImGui::SliderFloat4("start rotation Quat", &simulation->startRotationQuatUI.x, -5, 5, "%.2f");
+	ImGui::SliderFloat4("end rotation Quat", &simulation->endRotationQuatUI.x, -5, 5, "%.2f");
+	if (ImGui::Button("Apply##Quat"))
+		simulation->UpdateRotationsFromQuat();
+
 	ImGui::Separator();
 
 	if (ImGui::Checkbox("slerp", &simulation->slerp)) simulation->UpdateFrames();

@@ -17,8 +17,11 @@ using namespace DirectX::SimpleMath;
 class Simulation
 {
 public:
-	Vector3 startRotation;
-	Vector3 endRotation;
+	Vector3 startRotationEulerUI;
+	Vector3 endRotationEulerUI;
+
+	Quaternion startRotationQuatUI;
+	Quaternion endRotationQuatUI;
 
 	Vector3 startRotationEuler;
 	Vector3 endRotationEuler;
@@ -42,9 +45,11 @@ public:
 
 	void Init();
 	void Reset();
-	void UpdateValues();
 	void Update(float dt);
 	void UpdateFrames();
+
+	void UpdateRotationsFromEuler();
+	void UpdateRotationsFromQuat();
 
 	Matrix GetModelMatrixEuler(float animationProgress);
 	Matrix GetModelMatrixQuat(float animationProgress);

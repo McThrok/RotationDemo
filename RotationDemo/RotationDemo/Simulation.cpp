@@ -2,8 +2,8 @@
 
 void Simulation::Init()
 {
-	startRotation = Vector3(0, 0, 0);
-	endRotation = Vector3(0, 90, 0);
+	startRotationEulerUI = Vector3(0, 0, 0);
+	endRotationEulerUI = Vector3(0, 90, 0);
 
 	startPosition = Vector3(0, 0, 0);
 	endPosition = Vector3(2, 0, 0);
@@ -16,22 +16,39 @@ void Simulation::Init()
 	animationTime = 2.0f;
 
 	Reset();
+	UpdateFrames();
+	UpdateRotationsFromEuler();
 }
 
 void Simulation::Reset()
 {
-	UpdateValues();
-	UpdateFrames();
 	time = 0;
 }
 
-void Simulation::UpdateValues()
+void Simulation::UpdateRotationsFromEuler()
 {
-	startRotationEuler = startRotation * XM_PI / 180;
-	endRotationEuler = endRotation * XM_PI / 180;
+	startRotationEuler = startRotationEulerUI * XM_PI / 180;
+	endRotationEuler = endRotationEulerUI * XM_PI / 180;
 
-	startRotationQuat = EtoQ(startRotationEuler);
-	endRotationQuat = EtoQ(endRotationEuler);
+	startRotationQuatUI = EtoQ(startRotationEuler);
+	endRotationQuatUI = EtoQ(endRotationEuler);
+
+	startRotationQuat = startRotationQuatUI;
+	endRotationQuat = endRotationQuatUI;
+
+	UpdateFrames();
+}
+
+void Simulation::UpdateRotationsFromQuat()
+{
+	startRotationQuat = startRotationQuatUI;
+	endRotationQuat = endRotationQuatUI;
+
+	startRotationEuler = QtoE(startRotationQuat);
+	endRotationEuler = QtoE(endRotationQuat);
+
+	startRotationEulerUI = startRotationEuler / XM_PI * 180;
+	endRotationEulerUI = endRotationEuler / XM_PI * 180;
 
 	UpdateFrames();
 }
@@ -70,6 +87,7 @@ Quaternion Simulation::EtoQ(Vector3 v)
 
 Vector3 Simulation::QtoE(Quaternion q)
 {
+	q.Normalize();
 	Vector3 angles;
 
 	// roll (x-axis rotation)
@@ -123,6 +141,7 @@ Matrix Simulation::GetModelMatrixEuler(float animationProgress)
 
 	Vector3 rot = (endRot - startRot) * animationProgress + startRot;
 	Vector3 pos = (endPosition - startPosition) * animationProgress + startPosition;
+
 
 	return Matrix::CreateFromYawPitchRoll(rot.y, rot.x, rot.z) * Matrix::CreateTranslation(pos);//check order!!
 }
