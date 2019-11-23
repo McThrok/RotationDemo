@@ -84,14 +84,14 @@ void Graphics::RenderMainPanel() {
 	ImGui::SliderFloat3("end position", &simulation->endPosition.x, 0, 5);
 
 	ImGui::Separator();
-	ImGui::SliderFloat3("start rotation Euler", &simulation->startRotationEulerUI.x, -180, 180, "%.0f");
-	ImGui::SliderFloat3("end rotation Euler", &simulation->endRotationEulerUI.x, -180, 180, "%.0f");
+	ImGui::SliderFloat3("start rotation Euler", &simulation->startRotationEuler.x, -180, 180, "%.0f");
+	ImGui::SliderFloat3("end rotation Euler", &simulation->endRotationEuler.x, -180, 180, "%.0f");
 	if (ImGui::Button("Apply##Euler"))
 		simulation->UpdateRotationsFromEuler();
 
 	ImGui::Separator();
-	ImGui::SliderFloat4("start rotation Quat", &simulation->startRotationQuatUI.x, -5, 5, "%.2f");
-	ImGui::SliderFloat4("end rotation Quat", &simulation->endRotationQuatUI.x, -5, 5, "%.2f");
+	ImGui::SliderFloat4("start rotation Quat", &simulation->startRotationQuat.x, -5, 5, "%.2f");
+	ImGui::SliderFloat4("end rotation Quat", &simulation->endRotationQuat.x, -5, 5, "%.2f");
 	if (ImGui::Button("Apply##Quat"))
 		simulation->UpdateRotationsFromQuat();
 

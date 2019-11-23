@@ -17,12 +17,6 @@ using namespace DirectX::SimpleMath;
 class Simulation
 {
 public:
-	Vector3 startRotationEulerUI;
-	Vector3 endRotationEulerUI;
-
-	Quaternion startRotationQuatUI;
-	Quaternion endRotationQuatUI;
-
 	Vector3 startRotationEuler;
 	Vector3 endRotationEuler;
 
@@ -55,6 +49,7 @@ public:
 	Matrix GetModelMatrixQuat(float animationProgress);
 	Matrix GetModelMatrixEuler();
 	Matrix GetModelMatrixQuat();
+	Matrix GetRotationMatrix(Vector3 v);
 
 	Quaternion EtoQ(Vector3 v);
 	Vector3 QtoE(Quaternion q);

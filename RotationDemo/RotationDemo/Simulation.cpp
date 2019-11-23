@@ -2,9 +2,6 @@
 
 void Simulation::Init()
 {
-	startRotationEulerUI = Vector3(0, 0, 0);
-	endRotationEulerUI = Vector3(0, 90, 0);
-
 	startPosition = Vector3(0, 0, 0);
 	endPosition = Vector3(2, 0, 0);
 
@@ -27,28 +24,16 @@ void Simulation::Reset()
 
 void Simulation::UpdateRotationsFromEuler()
 {
-	startRotationEuler = startRotationEulerUI * XM_PI / 180;
-	endRotationEuler = endRotationEulerUI * XM_PI / 180;
-
-	startRotationQuatUI = EtoQ(startRotationEuler);
-	endRotationQuatUI = EtoQ(endRotationEuler);
-
-	startRotationQuat = startRotationQuatUI;
-	endRotationQuat = endRotationQuatUI;
+	startRotationQuat = EtoQ(startRotationEuler * XM_PI / 180);
+	endRotationQuat = EtoQ(endRotationEuler * XM_PI / 180);
 
 	UpdateFrames();
 }
 
 void Simulation::UpdateRotationsFromQuat()
 {
-	startRotationQuat = startRotationQuatUI;
-	endRotationQuat = endRotationQuatUI;
-
-	startRotationEuler = QtoE(startRotationQuat);
-	endRotationEuler = QtoE(endRotationQuat);
-
-	startRotationEulerUI = startRotationEuler / XM_PI * 180;
-	endRotationEulerUI = endRotationEuler / XM_PI * 180;
+	startRotationEuler = QtoE(startRotationQuat ) / XM_PI * 180;
+	endRotationEuler = QtoE(endRotationQuat ) / XM_PI * 180;
 
 	UpdateFrames();
 }
@@ -82,7 +67,7 @@ void Simulation::UpdateFrames()
 
 Quaternion Simulation::EtoQ(Vector3 v)
 {
-	return XMQuaternionRotationRollPitchYawFromVector(v);
+	return XMQuaternionRotationMatrix(GetRotationMatrix(v));
 }
 
 Vector3 Simulation::QtoE(Quaternion q)
@@ -112,8 +97,8 @@ Vector3 Simulation::QtoE(Quaternion q)
 
 Matrix Simulation::GetModelMatrixEuler(float animationProgress)
 {
-	Vector3 startRot = startRotationEuler;
-	Vector3 endRot = endRotationEuler;
+	Vector3 startRot = startRotationEuler * XM_PI / 180;
+	Vector3 endRot = endRotationEuler * XM_PI / 180;
 
 	while (startRot.x > XM_2PI) startRot.x -= XM_2PI;
 	while (startRot.y > XM_2PI) startRot.y -= XM_2PI;
@@ -142,8 +127,16 @@ Matrix Simulation::GetModelMatrixEuler(float animationProgress)
 	Vector3 rot = (endRot - startRot) * animationProgress + startRot;
 	Vector3 pos = (endPosition - startPosition) * animationProgress + startPosition;
 
+	return GetRotationMatrix(rot) * Matrix::CreateTranslation(pos);
+}
 
-	return Matrix::CreateFromYawPitchRoll(rot.y, rot.x, rot.z) * Matrix::CreateTranslation(pos);//check order!!
+Matrix Simulation::GetRotationMatrix(Vector3 v)
+{
+	Matrix m = Matrix::Identity;
+	m *= Matrix::CreateRotationX(v.x);
+	m *= Matrix::CreateRotationY(v.y);
+	m *= Matrix::CreateRotationZ(v.z);
+	return m;
 }
 
 Matrix Simulation::GetModelMatrixQuat(float animationProgress)
