@@ -173,6 +173,9 @@ Matrix Simulation::GetModelMatrixQuat(float animationProgress)
 
 	if (!slerp)
 	{
+		if (s.Dot(e) < 0.0f)
+			e = -e;
+
 		rot = (e - s) * animationProgress + s;
 	}
 	else
