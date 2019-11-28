@@ -87,7 +87,21 @@ void Simulation::UpdateFramesQuat()
 
 Quaternion Simulation::EtoQ(Vector3 v)
 {
-	return XMQuaternionRotationMatrix(GetRotationMatrix(v));
+	double cy = cos(v.z * 0.5);
+	double sy = sin(v.z * 0.5);
+	double cp = cos(v.y * 0.5);
+	double sp = sin(v.y * 0.5);
+	double cr = cos(v.x * 0.5);
+	double sr = sin(v.x * 0.5);
+
+	Quaternion q;
+	q.w = cy * cp * cr + sy * sp * sr;
+	q.x = cy * cp * sr - sy * sp * cr;
+	q.y = sy * cp * sr + cy * sp * cr;
+	q.z = sy * cp * cr - cy * sp * sr;
+
+	return q;
+	//return XMQuaternionRotationMatrix(GetRotationMatrix(v));
 }
 
 Vector3 Simulation::QtoE(Quaternion q)
